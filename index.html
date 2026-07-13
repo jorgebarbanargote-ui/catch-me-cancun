@@ -198,7 +198,21 @@ header.nav{position:fixed;top:0;left:0;right:0;z-index:100;transition:.4s}
 .qform{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;align-items:end}
 .hero-qform{grid-template-columns:1fr 1fr}
 .hero-qform .go{grid-column:1/-1}
-.hero-quote{max-width:460px;margin-left:auto}
+.hero-quote{max-width:470px;margin-left:auto}
+/* booking wizard */
+.wiz-prog{display:flex;gap:6px;margin-bottom:16px}
+.wiz-prog span{height:5px;flex:1;border-radius:3px;background:rgba(12,78,98,.16);transition:.3s}
+.wiz-prog span.on{background:linear-gradient(90deg,#12cfe0,#0891a6)}
+.wstep{display:flex;flex-direction:column;gap:12px;animation:wfade .3s ease}
+@keyframes wfade{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+.wstep.hide{display:none}
+.wrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.wfield{display:flex;flex-direction:column;gap:6px}
+.wfield label{font-family:var(--font-d);font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2)}
+.wfield input,.wfield select{background:#f2fbfd;border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--txt);font-family:var(--font-b);font-size:.9rem;width:100%;transition:.2s}
+.wfield input:focus,.wfield select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(8,180,204,.2);background:#fff}
+.wfield select option{background:#fff;color:var(--txt)}
+.wiz-nav{display:flex;gap:10px;margin-top:16px}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-family:var(--font-d);font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2)}
 .field input,.field select{background:#f2fbfd;border:1px solid var(--line);border-radius:12px;padding:12px 12px;
@@ -547,43 +561,76 @@ footer{position:relative;z-index:2;margin-top:90px;border-top:1px solid var(--li
         <div class="quote-head">
           <div class="ic grad-gold"><i class="fas fa-bolt" style="color:#5a3a00"></i></div>
           <div>
-            <h3 style="font-size:1.28rem" data-i18n="q_title">Book your ride in 20 seconds</h3>
-            <p style="font-size:.84rem;color:var(--muted)" data-i18n="q_sub">We build your WhatsApp message for you.</p>
+            <h3 style="font-size:1.28rem" data-i18n="q_title">Book your ride in 3 steps</h3>
+            <p style="font-size:.84rem;color:var(--muted)" data-i18n="q_sub">We build your WhatsApp request for you.</p>
           </div>
         </div>
-        <div class="qform hero-qform">
-          <div class="field">
-            <label for="q_from" data-i18n="q_from">Pickup from</label>
-            <select id="q_from" aria-label="Pickup from">
-              <option data-i18n="q_f1">Cancún Airport</option>
-              <option data-i18n="q_f2">Hotel / Resort</option>
-              <option data-i18n="q_f3">Airbnb</option>
-              <option>Playa del Carmen</option>
-              <option>Tulum</option>
-              <option data-i18n="q_f4">Cancún Downtown</option>
-            </select>
+
+        <div class="wiz">
+          <div class="wiz-prog" id="wprog"><span class="on"></span><span></span><span></span></div>
+
+          <!-- STEP 1: service + route -->
+          <div class="wstep" data-step="1">
+            <div class="wfield">
+              <label for="w_service" data-i18n="w_service">Type of service</label>
+              <select id="w_service" aria-label="Type of service">
+                <option value="round" data-i18n="w_s1">Round Trip</option>
+                <option value="oneway" data-i18n="w_s2">One Way</option>
+                <option value="h2h" data-i18n="w_s3">Hotel to Hotel</option>
+                <option value="open" data-i18n="w_s4">Open Service / Airbnb</option>
+              </select>
+            </div>
+            <div class="wrow">
+              <div class="wfield">
+                <label for="w_from" data-i18n="w_from">Pickup from</label>
+                <select id="w_from" aria-label="Pickup from">
+                  <option data-i18n="w_f1">Cancún Airport</option>
+                  <option data-i18n="w_f2">Hotel / Resort</option>
+                  <option data-i18n="w_f3">Airbnb</option>
+                  <option>Playa del Carmen</option><option>Tulum</option>
+                  <option data-i18n="w_f4">Cancún Downtown</option>
+                </select>
+              </div>
+              <div class="wfield">
+                <label for="w_to" data-i18n="w_to">Going to</label>
+                <select id="w_to" aria-label="Going to">
+                  <option>Cancún Hotel Zone</option><option>Playa del Carmen</option><option>Tulum</option>
+                  <option>Puerto Morelos</option><option>Playa Mujeres</option><option>Costa Mujeres</option>
+                  <option>Puerto Aventuras</option><option>Riviera Maya</option><option data-i18n="w_d_air">Cancún Airport</option>
+                </select>
+              </div>
+            </div>
           </div>
-          <div class="field">
-            <label for="q_dest" data-i18n="q_dest">Going to</label>
-            <select id="q_dest" aria-label="Going to">
-              <option>Cancún Hotel Zone</option><option>Playa del Carmen</option><option>Tulum</option>
-              <option>Puerto Morelos</option><option>Playa Mujeres</option><option>Costa Mujeres</option>
-              <option>Puerto Aventuras</option><option>Riviera Maya</option><option data-i18n="q_d_air">Cancún Airport</option>
-            </select>
+
+          <!-- STEP 2: date/time + pax + flight -->
+          <div class="wstep hide" data-step="2">
+            <div class="wrow">
+              <div class="wfield"><label for="w_date" data-i18n="w_date">Date</label><input type="date" id="w_date" aria-label="Date" /></div>
+              <div class="wfield"><label for="w_time" data-i18n="w_time">Time</label><input type="time" id="w_time" aria-label="Time" /></div>
+            </div>
+            <div class="wrow">
+              <div class="wfield"><label for="w_pax" data-i18n="w_pax">Passengers</label>
+                <select id="w_pax" aria-label="Passengers"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7-10</option><option>10+</option></select>
+              </div>
+              <div class="wfield"><label for="w_flight" data-i18n="w_flight">Flight # (optional)</label><input id="w_flight" placeholder="AA1234" aria-label="Flight number" /></div>
+            </div>
           </div>
-          <div class="field">
-            <label for="q_date" data-i18n="q_date">Day</label>
-            <input type="date" id="q_date" aria-label="Pickup day" />
+
+          <!-- STEP 3: contact -->
+          <div class="wstep hide" data-step="3">
+            <div class="wfield"><label for="w_name" data-i18n="w_name">Your name</label><input id="w_name" placeholder="John Smith" aria-label="Your name" /></div>
+            <div class="wfield"><label for="w_phone" data-i18n="w_phone">Your WhatsApp / phone</label><input id="w_phone" placeholder="+1 305 555 1234" inputmode="tel" aria-label="Your WhatsApp or phone" /></div>
+            <div class="wfield"><label for="w_msg" data-i18n="w_msg">Anything else? (optional)</label><input id="w_msg" placeholder="Luggage, baby seat…" aria-label="Extra notes" /></div>
           </div>
-          <div class="field">
-            <label for="q_pax" data-i18n="q_pax">Passengers</label>
-            <select id="q_pax" aria-label="Passengers"><option>1-4</option><option>5-6</option><option>7-10</option><option>10+</option></select>
-          </div>
-          <div class="field go">
-            <button class="btn btn-wa" id="q_send" style="width:100%;justify-content:center"><svg class="ci" aria-hidden="true"><use href="#i-wa"></use></svg> <span data-i18n="q_go">Book now</span></button>
+
+          <div class="wiz-nav">
+            <button class="btn btn-ghost" id="w_back" type="button" style="display:none"><i class="fas fa-arrow-left"></i> <span data-i18n="w_back">Back</span></button>
+            <button class="btn btn-primary" id="w_next" type="button" style="flex:1;justify-content:center"><span data-i18n="w_next">Next</span> <i class="fas fa-arrow-right"></i></button>
+            <button class="btn btn-wa" id="w_send" type="button" style="flex:1;justify-content:center;display:none"><svg class="ci" aria-hidden="true"><use href="#i-wa"></use></svg> <span data-i18n="w_go">Send request</span></button>
           </div>
         </div>
-        <div class="qnote"><i class="fas fa-shield-halved"></i> <span data-i18n="q_note">No sign-up — opens WhatsApp with your trip ready. A real person replies, insured & on time.</span></div>
+
+        <div class="qnote"><i class="fas fa-shield-halved"></i> <span data-i18n="q_note">No sign-up — we open WhatsApp with your trip ready. A real person replies, insured &amp; on time.</span></div>
       </div>
     </div>
   </div>
@@ -907,10 +954,14 @@ const I18N={
     hero_cta1:"Cotización instantánea",hero_cta2:"Reserva por WhatsApp",hero_cta1b:"Cotizar",hero_cta2b:"WhatsApp",
     ti_ins:"Pasajero asegurado",ti_flight:"Seguimiento de vuelo",ti_247:"Servicio 24/7",
     fb_from:"Privado · viaje redondo",fb_reply:"Respuesta promedio",hv_tag:"Zona Hotelera de Cancún · aéreo",
-    q_title:"Reserva tu viaje en 20 segundos",q_sub:"Armamos tu mensaje de WhatsApp por ti.",
-    q_from:"Recogida en",q_f1:"Aeropuerto de Cancún",q_f2:"Hotel / Resort",q_f3:"Airbnb",q_f4:"Centro de Cancún",q_d_air:"Aeropuerto de Cancún",
-    q_dest:"Hacia",q_pax:"Pasajeros",q_date:"Día",q_go:"Reservar ahora",
-    q_note:"Sin registro — abre WhatsApp con tu viaje listo. Te responde una persona real, asegurado y puntual.",
+    q_title:"Reserva tu viaje en 3 pasos",q_sub:"Armamos tu solicitud de WhatsApp por ti.",
+    q_note:"Sin registro — abrimos WhatsApp con tu viaje listo. Te responde una persona real, asegurado y puntual.",
+    w_service:"Tipo de servicio",w_s1:"Viaje Redondo",w_s2:"Sencillo",w_s3:"Hotel a Hotel",w_s4:"Open Service / Airbnb",
+    w_from:"Recogida en",w_f1:"Aeropuerto de Cancún",w_f2:"Hotel / Resort",w_f3:"Airbnb",w_f4:"Centro de Cancún",
+    w_to:"Hacia",w_d_air:"Aeropuerto de Cancún",
+    w_date:"Fecha",w_time:"Hora",w_pax:"Pasajeros",w_flight:"# de vuelo (opcional)",
+    w_name:"Tu nombre",w_phone:"Tu WhatsApp / teléfono",w_msg:"¿Algo más? (opcional)",
+    w_back:"Atrás",w_next:"Siguiente",w_go:"Enviar solicitud",
     st1:"Años manejando Cancún",st2:"Huéspedes trasladados",st3:"Destinos cubiertos",st4:"Asegurado y con permisos",
     sv_eyebrow:"Lo que hacemos",sv_title:"Todo tipo de traslado, un chofer de confianza",
     sv_sub:"Desde un pickup rápido en el aeropuerto hasta servicio privado de día completo — en vehículos con A/C y un chofer profesional que habla inglés.",
@@ -970,16 +1021,47 @@ function setLang(lang){
 document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
 
 /* ---------- quote → whatsapp ---------- */
-document.getElementById('q_send').addEventListener('click',()=>{
-  const es=document.documentElement.lang==='es';
-  const f=q('q_from'),d=q('q_dest'),p=q('q_pax'),dt=document.getElementById('q_date').value;
-  const date=dt?dt:(es?'(por definir)':'(to define)');
-  const msg=es
-    ? `¡Hola Catch Me Cancun! 👋%0AQuiero reservar un traslado:%0A%0A• Desde: ${f}%0A• Hacia: ${d}%0A• Día: ${date}%0A• Pasajeros: ${p}%0A%0A¿Me pueden dar precio y disponibilidad? ¡Gracias!`
-    : `Hi Catch Me Cancun! 👋%0AI'd like to book a transfer:%0A%0A• Pickup: ${f}%0A• Destination: ${d}%0A• Day: ${date}%0A• Passengers: ${p}%0A%0ACould you share price and availability? Thanks!`;
-  window.open('https://wa.me/5219981916965?text='+msg,'_blank');
-});
-function q(id){const e=document.getElementById(id);return e.options[e.selectedIndex].text;}
+/* ---------- hero booking wizard ---------- */
+(function(){
+  let step=1; const total=3;
+  const steps=[...document.querySelectorAll('.wstep')];
+  const dots=[...document.querySelectorAll('#wprog span')];
+  const back=document.getElementById('w_back'), next=document.getElementById('w_next'), send=document.getElementById('w_send');
+  if(!steps.length) return;
+  function show(){
+    steps.forEach(s=>s.classList.toggle('hide',+s.dataset.step!==step));
+    dots.forEach((d,i)=>d.classList.toggle('on',i<step));
+    back.style.display= step>1 ? 'inline-flex':'none';
+    next.style.display= step<total ? 'inline-flex':'none';
+    send.style.display= step===total ? 'inline-flex':'none';
+  }
+  next.addEventListener('click',()=>{ if(step<total){step++;show();} });
+  back.addEventListener('click',()=>{ if(step>1){step--;show();} });
+  const val=id=>{const e=document.getElementById(id);return e?(e.value||'').trim():'';};
+  const sel=id=>{const e=document.getElementById(id);return e?e.options[e.selectedIndex].text:'';};
+  send.addEventListener('click',()=>{
+    const es=document.documentElement.lang==='es';
+    const svc=sel('w_service'), from=sel('w_from'), to=sel('w_to');
+    const date=val('w_date')||(es?'(por definir)':'(to define)');
+    const time=val('w_time'), pax=sel('w_pax'), flight=val('w_flight');
+    const name=val('w_name'), phone=val('w_phone'), extra=val('w_msg');
+    const NL='%0A';
+    let m = es ? `¡Hola Catch Me Cancun! 👋${NL}Quiero reservar un traslado:${NL}${NL}`
+                : `Hi Catch Me Cancun! 👋${NL}I'd like to book a transfer:${NL}${NL}`;
+    const row=(es_l,en_l,v)=> v ? `• ${es?es_l:en_l}: ${encodeURIComponent(v)}${NL}` : '';
+    m+=row('Servicio','Service',svc);
+    m+=row('Desde','From',from)+row('Hacia','To',to);
+    m+=row('Día','Date',date)+row('Hora','Time',time);
+    m+=row('Pasajeros','Passengers',pax);
+    m+=row('Vuelo','Flight',flight);
+    m+=row('Nombre','Name',name);
+    m+=row('WhatsApp','WhatsApp',phone);
+    m+=row('Notas','Notes',extra);
+    m+= NL + (es?'¿Me pueden confirmar disponibilidad y precio? ¡Gracias!':'Could you confirm availability and price? Thanks!');
+    window.open('https://wa.me/5219981916965?text='+m,'_blank');
+  });
+  show();
+})();
 
 /* ---------- nav / scroll ---------- */
 const nav=document.getElementById('nav');
@@ -1030,7 +1112,7 @@ addEventListener('load',()=>{
 
 /* ---------- init ---------- */
 document.getElementById('yr').textContent=new Date().getFullYear();
-try{const dEl=document.getElementById('q_date');dEl.min=new Date().toISOString().split('T')[0];}catch(e){}
+try{const dEl=document.getElementById('w_date');dEl.min=new Date().toISOString().split('T')[0];}catch(e){}
 const saved=localStorage.getItem('cmc_lang');
 if(saved==='es')setLang('es');
 </script>
