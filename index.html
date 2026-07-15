@@ -435,6 +435,31 @@ footer{position:relative;z-index:2;margin-top:90px;border-top:1px solid var(--li
 .mmenu a:hover{color:var(--blue-deep)}
 .mclose{position:absolute;top:24px;right:24px;font-size:1.6rem;color:var(--txt);background:none;border:0;cursor:pointer}
 
+/* ===== RATES ===== */
+.rates-note{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 22px;margin:4px 0 36px;font-family:var(--font-d);font-size:.84rem;color:var(--muted)}
+.rates-note span{display:inline-flex;align-items:center;gap:8px}
+.rates-note b{color:var(--blue-deep);font-weight:700}
+.rates-note i{color:var(--teal)}
+.rates{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.rate-card{background:var(--panel);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 14px 40px -26px rgba(8,80,100,.55);transition:transform .3s,box-shadow .3s}
+.rate-card:hover{transform:translateY(-6px);box-shadow:0 28px 60px -26px rgba(8,120,140,.55)}
+.rate-photo{position:relative;height:138px}
+.rate-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.rate-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 36%,rgba(4,26,36,.84))}
+.rate-photo h3{position:absolute;left:16px;bottom:11px;z-index:2;color:#fff;font-family:var(--font-h);font-weight:800;font-size:1.3rem;line-height:1;text-shadow:0 2px 12px rgba(0,0,0,.55)}
+.rate-body{padding:14px 16px 4px}
+.rate-row{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:8px;padding:5px 0}
+.rate-head{font-family:var(--font-d);font-size:.66rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted2);padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.rate-head span{text-align:center}
+.rate-head span:first-child{text-align:left}
+.rate-row .pax{justify-self:start;background:linear-gradient(135deg,var(--gold),#ffe396);color:#3a2600;font-family:var(--font-d);font-weight:700;font-size:.8rem;padding:5px 0;border-radius:9px;width:100%;max-width:64px;text-align:center}
+.rate-row .ow,.rate-row .rt{text-align:center;font-family:var(--font-d);font-weight:700}
+.rate-row .ow{color:var(--blue-deep);font-size:.98rem}
+.rate-row .rt{color:#0a2230;font-size:1.04rem}
+.rate-row .rt small{display:block;font-size:.58rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--teal)}
+.rate-book{margin:12px 14px 16px;display:flex;align-items:center;justify-content:center;gap:9px;background:#25D366;color:#fff;font-family:var(--font-d);font-weight:700;font-size:.88rem;padding:12px;border-radius:13px;box-shadow:0 12px 26px -14px rgba(37,211,102,.95);transition:transform .2s,filter .2s}
+.rate-book:hover{transform:translateY(-2px);filter:brightness(1.06)}
+.rate-book .ci{width:19px;height:19px;fill:currentColor}
 @media(max-width:960px){
   .hero-grid{grid-template-columns:1fr;gap:34px}
   .hero-visual{order:-1}
@@ -447,6 +472,7 @@ footer{position:relative;z-index:2;margin-top:90px;border-top:1px solid var(--li
   .gallery{grid-template-columns:1fr 1fr}
   .steps{grid-template-columns:1fr 1fr}
   .dests{grid-template-columns:1fr 1fr}
+  .rates{grid-template-columns:1fr 1fr}
   .reviews{grid-template-columns:1fr}
   .foot-grid{grid-template-columns:1fr 1fr}
   .nav-links,.nav-tools .btn{display:none}
@@ -456,7 +482,7 @@ footer{position:relative;z-index:2;margin-top:90px;border-top:1px solid var(--li
 }
 @media(max-width:560px){
   .hero{padding:120px 0 50px}
-  .cards,.steps,.dests,.foot-grid,.gallery{grid-template-columns:1fr}
+  .cards,.steps,.dests,.rates,.foot-grid,.gallery{grid-template-columns:1fr}
   .stat .n{font-size:1.8rem}
   .float-badge{display:none}
   /* en móvil: título primero, luego el formulario */
@@ -517,6 +543,7 @@ footer{position:relative;z-index:2;margin-top:90px;border-top:1px solid var(--li
       <a href="#fleet" data-i18n="nav_fleet">Fleet</a>
       <a href="#how" data-i18n="nav_how">How it works</a>
       <a href="#destinations" data-i18n="nav_dest">Destinations</a>
+      <a href="#rates" data-i18n="nav_pricing">Rates</a>
       <a href="#reviews" data-i18n="nav_reviews">Reviews</a>
       <a href="#contact" data-i18n="nav_contact">Contact</a>
     </nav>
@@ -539,6 +566,7 @@ footer{position:relative;z-index:2;margin-top:90px;border-top:1px solid var(--li
   <a href="#fleet" data-i18n="nav_fleet">Fleet</a>
   <a href="#how" data-i18n="nav_how">How it works</a>
   <a href="#destinations" data-i18n="nav_dest">Destinations</a>
+  <a href="#rates" data-i18n="nav_pricing">Rates</a>
   <a href="#reviews" data-i18n="nav_reviews">Reviews</a>
   <a href="#contact" data-i18n="nav_contact">Contact</a>
   <a href="#quote" class="btn btn-gold" style="margin-top:14px"><i class="fas fa-bolt"></i> <span data-i18n="nav_book">Book now</span></a>
@@ -749,6 +777,23 @@ footer{position:relative;z-index:2;margin-top:90px;border-top:1px solid var(--li
       <a class="dest" href="#quote"><img class="dimg" src="img/destination-puerto-morelos.jpg" alt="Puerto Morelos" loading="lazy" /><i class="fas fa-location-dot dico"></i><div class="dn"><h4>Puerto Morelos</h4><span data-i18n="dt7">Quiet fishing town</span></div></a>
       <a class="dest" href="#quote"><img class="dimg" src="img/destination-puerto-aventuras.jpg" alt="Puerto Aventuras" loading="lazy" /><i class="fas fa-location-dot dico"></i><div class="dn"><h4>Puerto Aventuras</h4><span data-i18n="dt8">Marina & golf</span></div></a>
     </div>
+  </div>
+</section>
+
+<!-- RATES -->
+<section class="sec" id="rates">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow" data-i18n="rt_eyebrow">Transfer rates</span>
+      <h2 data-i18n="rt_title">Clear prices to every destination</h2>
+      <p data-i18n="rt_sub">Private transfers in USD. Round trip covers both ways. Insurance, taxes and tolls are always included.</p>
+    </div>
+    <div class="rates-note reveal">
+      <span><i class="fas fa-van-shuttle"></i> <b data-i18n="rt_n1">Price per vehicle</b></span>
+      <span><i class="fas fa-shield-halved"></i> <span data-i18n="rt_n2">Insurance, taxes &amp; tolls included</span></span>
+      <span><i class="fas fa-plane-arrival"></i> <span data-i18n="rt_n3">24/7 flight tracking</span></span>
+    </div>
+    <div class="rates reveal" id="ratesGrid"></div>
   </div>
 </section>
 
@@ -1008,6 +1053,8 @@ const I18N={
     hw4t:"Disfruta el viaje",hw4d:"Tu chofer te espera con un letrero. Relájate — estás en buenas manos.",
     dt_eyebrow:"A dónde vamos",dt_title:"Cada rincón de la Riviera Maya",dt_sub:"Servicio puerta a puerta desde y hacia todos los hoteles, resorts y pueblos de la región.",
     dt1:"Zona Hotelera y Centro",dt2:"Resorts todo incluido",dt3:"Quinta Avenida y playas",dt4:"Pueblo Mágico",dt5:"Resorts de lujo",dt6:"Nueva zona de resorts",dt7:"Tranquilo pueblo pesquero",dt8:"Marina y golf",
+    rt_eyebrow:"Tarifas de traslado",rt_title:"Precios claros a cada destino",rt_sub:"Traslados privados en USD. El viaje redondo cubre ida y vuelta. Seguro, impuestos y casetas siempre incluidos.",
+    rt_n1:"Precio por vehículo",rt_n2:"Seguro, impuestos y casetas incluidos",rt_n3:"Seguimiento de vuelo 24/7",
     wh_eyebrow:"La diferencia Catch Me",wh_title:"Por qué las familias regresan con nosotros año tras año",
     wh1t:"Seguimiento de vuelo",wh1d:"Adelantado o retrasado — ya estamos viendo tu vuelo y esperándote.",
     wh2t:"Comunicación real",wh2d:"Habla directo con Jose y el equipo. Respuestas claras, sin call centers.",
@@ -1038,8 +1085,50 @@ function setLang(lang){
   });
   document.querySelectorAll('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.lang===lang));
   localStorage.setItem('cmc_lang',lang);
+  if(window.__renderRates) window.__renderRates(lang);
 }
 document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+
+/* ---------- rates cards ---------- */
+(function(){
+  const grid=document.getElementById('ratesGrid'); if(!grid) return;
+  /* [1-4 ida, 1-4 redondo], [5-7 ...], [8-10 ...] — precios en USD */
+  const R=[
+    {n:'Cancún',            img:'destination-cancun.jpg',           p:[[51,102],[54,108],[57,114]]},
+    {n:'Puerto Juárez',     img:'destination-riviera-maya.jpg',     p:[[55,109],[57,114],[63,125]]},
+    {n:'Puerto Morelos',    img:'destination-puerto-morelos.jpg',   p:[[60,120],[66,131],[72,143]]},
+    {n:'Playa Mujeres',     img:'destination-playa-mujeres.jpg',    p:[[66,131],[72,143],[78,155]]},
+    {n:'Costa Mujeres',     img:'destination-costa-mujeres.jpg',    p:[[72,143],[78,155],[84,167]]},
+    {n:'Punta Maroma',      img:'destination-tulum.jpg',            p:[[72,143],[72,143],[78,155]]},
+    {n:'Playa del Carmen',  img:'destination-playa-del-carmen.jpg', p:[[87,173],[90,179],[96,191]]},
+    {n:'Puerto Aventuras',  img:'destination-puerto-aventuras.jpg', p:[[102,203],[108,215],[114,227]]},
+    {n:'Boca Paila',        img:'destination-tulum.jpg',            p:[[298,595],[310,620],[346,691]]}
+  ];
+  const PAX=['1–4','5–7','8–10'];
+  const L={
+    en:{pax:'Pax',ow:'One way',rt:'Round',trip:'trip',book:'Book',
+        msg:n=>`Hi Catch Me Cancun 👋 I'm interested in a private transfer to ${n}. Can you send me a quote?`},
+    es:{pax:'Pax',ow:'Solo ida',rt:'Redondo',trip:'ida y vuelta',book:'Reservar',
+        msg:n=>`¡Hola Catch Me Cancun! 👋 Me interesa un traslado privado a ${n}. ¿Me pueden cotizar?`}
+  };
+  function render(lang){
+    const t=L[lang]||L.en;
+    grid.innerHTML=R.map(d=>{
+      const wa='https://wa.me/5219981916965?text='+encodeURIComponent(t.msg(d.n));
+      const rows=d.p.map((pr,i)=>`<div class="rate-row"><span class="pax">${PAX[i]}</span><span class="ow">$${pr[0]}</span><span class="rt">$${pr[1]}</span></div>`).join('');
+      return `<article class="rate-card">
+        <div class="rate-photo"><img src="img/${d.img}" alt="${d.n}" loading="lazy"><h3>${d.n}</h3></div>
+        <div class="rate-body">
+          <div class="rate-row rate-head"><span>${t.pax}</span><span>${t.ow}</span><span>${t.rt}</span></div>
+          ${rows}
+        </div>
+        <a class="rate-book" href="${wa}" target="_blank" rel="noopener"><svg class="ci" aria-hidden="true"><use href="#i-wa"></use></svg> ${t.book} · ${d.n}</a>
+      </article>`;
+    }).join('');
+  }
+  window.__renderRates=render;
+  render(document.documentElement.lang==='es'?'es':'en');
+})();
 
 /* ---------- quote → whatsapp ---------- */
 /* ---------- hero booking wizard ---------- */
