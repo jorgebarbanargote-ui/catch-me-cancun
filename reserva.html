@@ -286,7 +286,7 @@ a{color:var(--turq-deep)}
 
 <script>
 /* ---------- password gate ---------- */
-const PWHASH="7869cdcb40ddd6b1a4a7af7d70d791c88461b0e5a28108e423305e30098c9d67";
+const PWHASH="97f700d77ada9bc043ad78e973406fa10e8a53a283e95b38b7e5b02b56b7bd69";
 async function sha256(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");}
 const gate=document.getElementById("gate"), app=document.getElementById("app");
 function unlock(){gate.style.display="none";app.style.display="block";build();}
