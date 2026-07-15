@@ -369,19 +369,21 @@ document.getElementById("enrollNo").addEventListener("click", ()=>{ document.get
 
 /* botón de gestión dentro del panel */
 const bioCfg=document.getElementById("bioCfg");
+const bioSupported=(location.protocol==='https:'||location.hostname==='localhost') && !!window.PublicKeyCredential;
 function refreshBioCfg(){
-  if(!bioAvail){ bioCfg.style.display="none"; return; }
+  if(!bioSupported){ bioCfg.style.display="none"; return; } /* solo se oculta si el navegador no soporta WebAuthn */
   bioCfg.style.display="";
   bioCfg.textContent = localStorage.getItem(BIO_KEY) ? "🔓 Quitar Face ID / huella" : "👤 Activar Face ID / huella";
 }
 bioCfg.addEventListener("click", async ()=>{
   if(localStorage.getItem(BIO_KEY)){
     if(confirm("¿Quitar Face ID / huella de este dispositivo?")){ localStorage.removeItem(BIO_KEY); refreshBioCfg(); }
-  } else {
-    try{ await bioRegister(); alert("✅ Face ID / huella activado en este dispositivo."); }
-    catch(e){ alert("No se pudo activar: "+(e.message||e)); }
-    refreshBioCfg();
+    return;
   }
+  if(!bioAvail){ alert("Este dispositivo no tiene Face ID / huella integrada. Abre el panel desde tu teléfono (iPhone o Android) y ahí actívalo."); return; }
+  try{ await bioRegister(); alert("✅ Face ID / huella activado en este dispositivo. La próxima vez podrás entrar con tu cara/huella."); }
+  catch(e){ alert("No se pudo activar: "+(e.message||e)); }
+  refreshBioCfg();
 });
 
 /* init biometría */
