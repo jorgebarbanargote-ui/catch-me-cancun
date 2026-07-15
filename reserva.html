@@ -115,9 +115,24 @@ a{color:var(--turq-deep)}
     <img src="img/logo.png" alt="Catch Me Cancun" />
     <h1>Panel de Reservas</h1>
     <p>Acceso privado · solo personal autorizado</p>
-    <input type="password" id="pw" placeholder="Contraseña" autocomplete="current-password" />
-    <div class="gate-err" id="gerr"></div>
-    <button class="btn btn-wa" style="width:100%" id="pwbtn">Entrar</button>
+
+    <!-- desbloqueo biométrico (Face ID / huella) -->
+    <button class="btn" id="bioBtn" style="display:none;width:100%;margin-bottom:14px;background:linear-gradient(135deg,#0c2a3a,#0a3a4d);color:#fff">
+      <span style="font-size:1.15em;line-height:1">👤</span> Entrar con Face ID / huella
+    </button>
+
+    <div id="pwArea">
+      <input type="password" id="pw" placeholder="Contraseña" autocomplete="current-password" />
+      <div class="gate-err" id="gerr"></div>
+      <button class="btn btn-wa" style="width:100%" id="pwbtn">Entrar</button>
+    </div>
+
+    <!-- ofrecer activar biometría tras entrar con contraseña -->
+    <div id="enroll" style="display:none">
+      <p style="color:var(--muted);font-size:.9rem;margin-bottom:14px">¿Activar <b>Face ID / huella</b> en este dispositivo para entrar más rápido la próxima vez?</p>
+      <button class="btn btn-wa" style="width:100%;margin-bottom:10px" id="enrollYes">Activar Face ID / huella</button>
+      <button class="btn btn-ghost" style="width:100%" id="enrollNo">Ahora no</button>
+    </div>
   </div>
 </div>
 
@@ -131,6 +146,7 @@ a{color:var(--turq-deep)}
         <button data-l="es" class="on">ES</button>
         <button data-l="en">EN</button>
       </div>
+      <button class="btn-logout" id="bioCfg" style="display:none">Face ID</button>
       <button class="btn-logout" id="logout">Salir</button>
     </div>
   </div>
@@ -298,12 +314,85 @@ const gate=document.getElementById("gate"), app=document.getElementById("app");
 function unlock(){gate.style.display="none";app.style.display="block";build();}
 async function tryPw(){
   const v=document.getElementById("pw").value;
-  if(await sha256(v)===PWHASH){sessionStorage.setItem("cmc_ok","1");unlock();}
+  if(await sha256(v)===PWHASH){
+    sessionStorage.setItem("cmc_ok","1");
+    if(bioAvail && !localStorage.getItem(BIO_KEY)){ /* ofrecer activar Face ID */
+      document.getElementById("pwArea").style.display="none";
+      document.getElementById("bioBtn").style.display="none";
+      document.getElementById("enroll").style.display="";
+    } else { unlock(); }
+  }
   else{document.getElementById("gerr").textContent="Contraseña incorrecta.";}
 }
 document.getElementById("pwbtn").addEventListener("click",tryPw);
 document.getElementById("pw").addEventListener("keydown",e=>{if(e.key==="Enter")tryPw();});
 document.getElementById("logout").addEventListener("click",()=>{sessionStorage.removeItem("cmc_ok");location.reload();});
+
+/* ---------- Face ID / huella (WebAuthn, iPhone y Android) ---------- */
+const BIO_KEY="cmc_bio_cred";
+const _b64=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const _unb64=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');const bin=atob(s);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u.buffer;};
+const _rnd=n=>{const a=new Uint8Array(n);crypto.getRandomValues(a);return a;};
+let bioAvail=false;
+async function bioCheck(){
+  const secure = location.protocol==='https:' || location.hostname==='localhost';
+  try{ bioAvail = secure && !!window.PublicKeyCredential && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); }
+  catch(e){ bioAvail=false; }
+  return bioAvail;
+}
+async function bioRegister(){
+  const cred=await navigator.credentials.create({publicKey:{
+    challenge:_rnd(32),
+    rp:{name:"Catch Me Cancun", id:location.hostname},
+    user:{id:_rnd(16), name:"catchme-panel", displayName:"Catch Me Cancun"},
+    pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],
+    authenticatorSelection:{authenticatorAttachment:"platform", userVerification:"required", residentKey:"preferred"},
+    timeout:60000, attestation:"none"
+  }});
+  localStorage.setItem(BIO_KEY,_b64(cred.rawId));
+}
+async function bioVerify(){
+  const id=localStorage.getItem(BIO_KEY); if(!id) throw new Error("no-cred");
+  await navigator.credentials.get({publicKey:{
+    challenge:_rnd(32),
+    allowCredentials:[{type:"public-key", id:_unb64(id)}],
+    userVerification:"required", timeout:60000, rpId:location.hostname
+  }});
+}
+document.getElementById("bioBtn").addEventListener("click", async ()=>{
+  try{ await bioVerify(); sessionStorage.setItem("cmc_ok","1"); unlock(); }
+  catch(e){ document.getElementById("gerr").textContent="No se pudo verificar. Entra con tu contraseña."; document.getElementById("pwArea").style.display=""; }
+});
+document.getElementById("enrollYes").addEventListener("click", async ()=>{
+  try{ await bioRegister(); }catch(e){ /* si cancela, entra igual */ }
+  document.getElementById("enroll").style.display="none"; unlock();
+});
+document.getElementById("enrollNo").addEventListener("click", ()=>{ document.getElementById("enroll").style.display="none"; unlock(); });
+
+/* botón de gestión dentro del panel */
+const bioCfg=document.getElementById("bioCfg");
+function refreshBioCfg(){
+  if(!bioAvail){ bioCfg.style.display="none"; return; }
+  bioCfg.style.display="";
+  bioCfg.textContent = localStorage.getItem(BIO_KEY) ? "Quitar Face ID" : "Activar Face ID";
+}
+bioCfg.addEventListener("click", async ()=>{
+  if(localStorage.getItem(BIO_KEY)){
+    if(confirm("¿Quitar Face ID / huella de este dispositivo?")){ localStorage.removeItem(BIO_KEY); refreshBioCfg(); }
+  } else {
+    try{ await bioRegister(); alert("✅ Face ID / huella activado en este dispositivo."); }
+    catch(e){ alert("No se pudo activar: "+(e.message||e)); }
+    refreshBioCfg();
+  }
+});
+
+/* init biometría */
+(async()=>{
+  await bioCheck();
+  if(bioAvail && localStorage.getItem(BIO_KEY)) document.getElementById("bioBtn").style.display="flex";
+  refreshBioCfg();
+})();
+
 if(sessionStorage.getItem("cmc_ok")==="1")unlock();
 
 /* ---------- tabs ---------- */
@@ -465,14 +554,17 @@ function pxCollect(){
   } else {
     try{
       const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js');
-      const { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js');
+      const { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js');
       const { getFirestore, doc, getDoc, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js');
       const app=initializeApp(cfg), auth=getAuth(app), db=getFirestore(app);
+      try{ await setPersistence(auth, browserLocalPersistence); }catch(e){} /* mantener sesión iniciada */
       const ref=doc(db,'config','prices');
 
+      let gridReady=false; /* candado: no recargar la cuadrícula mientras se edita */
       async function loadInto(){
-        try{ const s=await getDoc(ref); pxBuildGrid(s.exists()?s.data().rates:null); }
-        catch(e){ pxBuildGrid(null); pxToast('No se pudieron cargar los precios: '+e.message,true); }
+        if(gridReady) return;
+        try{ const s=await getDoc(ref); pxBuildGrid(s.exists()?s.data().rates:null); gridReady=true; }
+        catch(e){ pxBuildGrid(null); gridReady=true; pxToast('No se pudieron cargar los precios: '+e.message,true); }
       }
 
       onAuthStateChanged(auth, async user=>{
@@ -481,6 +573,7 @@ function pxCollect(){
           document.getElementById('pxWho').textContent='✓ Conectado como '+user.email;
           await loadInto();
         } else {
+          gridReady=false;
           loginBox.style.display=''; editorBox.classList.add('hide');
         }
       });
