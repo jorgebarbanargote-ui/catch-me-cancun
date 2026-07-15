@@ -1130,7 +1130,11 @@ document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',
   /* aplica precios remotos (Firebase); si un destino no viene, conserva el de respaldo */
   window.__applyRates=function(remote){
     if(!remote||typeof remote!=='object') return;
-    R.forEach(d=>{ const r=remote[d.id]; if(Array.isArray(r)&&r.length===3) d.p=r; });
+    R.forEach(d=>{
+      const r=remote[d.id];
+      if(Array.isArray(r)&&r.length===6) d.p=[[r[0],r[1]],[r[2],r[3]],[r[4],r[5]]]; /* plano de 6 (Firestore) */
+      else if(Array.isArray(r)&&r.length===3) d.p=r; /* compatibilidad formato anterior */
+    });
     render(document.documentElement.lang==='es'?'es':'en');
   };
   render(document.documentElement.lang==='es'?'es':'en');

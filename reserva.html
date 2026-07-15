@@ -428,7 +428,9 @@ function pxToast(msg,isErr){const t=document.getElementById('pxToast');t.textCon
 function pxBuildGrid(data){
   const grid=document.getElementById('pxGrid');
   grid.innerHTML=PX_DEST.map(d=>{
-    const p=(data&&Array.isArray(data[d.id])&&data[d.id].length===3)?data[d.id]:d.p;
+    let p=d.p; const rd=data&&data[d.id];
+    if(Array.isArray(rd)&&rd.length===6) p=[[rd[0],rd[1]],[rd[2],rd[3]],[rd[4],rd[5]]];
+    else if(Array.isArray(rd)&&rd.length===3) p=rd;
     const rows=PX_PAX.map((lbl,i)=>`<div class="px-row"><span class="pax">${lbl}</span>`+
       `<input type="number" inputmode="numeric" min="0" data-id="${d.id}" data-row="${i}" data-col="0" value="${p[i][0]}">`+
       `<input type="number" inputmode="numeric" min="0" data-id="${d.id}" data-row="${i}" data-col="1" value="${p[i][1]}"></div>`).join('');
@@ -436,10 +438,12 @@ function pxBuildGrid(data){
   }).join('');
 }
 function pxCollect(){
-  const rates={}; PX_DEST.forEach(d=>rates[d.id]=[[0,0],[0,0],[0,0]]);
+  /* formato plano de 6 números por destino: [ida1,red1,ida2,red2,ida3,red3] — Firestore no admite arreglos anidados */
+  const rates={}; PX_DEST.forEach(d=>rates[d.id]=[0,0,0,0,0,0]);
   document.querySelectorAll('#pxGrid input').forEach(inp=>{
+    const idx=(+inp.dataset.row)*2+(+inp.dataset.col);
     const v=parseInt(inp.value,10);
-    rates[inp.dataset.id][+inp.dataset.row][+inp.dataset.col]=isNaN(v)?0:v;
+    rates[inp.dataset.id][idx]=isNaN(v)?0:v;
   });
   return rates;
 }
