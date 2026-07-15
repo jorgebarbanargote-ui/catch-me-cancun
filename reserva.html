@@ -160,7 +160,13 @@ a{color:var(--turq-deep)}
               <option>Group Van</option><option>Stretch Limo</option><option>Sedan</option>
             </select>
           </div>
-          <div class="f"><label>Costo (USD)</label><input id="p_cost" placeholder="140" inputmode="decimal" /></div>
+          <div class="f"><label>Costo</label><input id="p_cost" placeholder="140" inputmode="decimal" /></div>
+          <div class="f"><label>Moneda</label>
+            <select id="p_currency">
+              <option value="USD">USD · Dólares</option>
+              <option value="MXN">MXN · Pesos mexicanos</option>
+            </select>
+          </div>
           <div class="f full"><label>Estado de pago</label>
             <div class="pay">
               <label class="paid"><input type="radio" name="pay" value="paid" checked /><span>✅ PAGADO / PAID</span></label>
@@ -335,7 +341,7 @@ function build(){
   const adults=g("p_adults"), kids=g("p_children");
   let pax=adults?`${adults} ${L("adulto(s)","adult(s)")}`:"";
   if(kids && kids!=="0") pax+=`${pax?", ":""}${kids} ${L("niño(s)","child(ren)")}`;
-  const vehicle=g("p_vehicle"), cost=g("p_cost");
+  const vehicle=g("p_vehicle"), cost=g("p_cost"), currency=g("p_currency")||"USD";
   const paid=document.querySelector('input[name="pay"]:checked').value==="paid";
   const notes=g("p_notes");
 
@@ -372,7 +378,7 @@ function build(){
   }
 
   m+=`\n`; m+=line(`🚙 *${L("Vehículo","Vehicle")}*`,vehicle);
-  if(cost){ m+=`💵 *${L("Total","Total")}:* $${cost} USD — ${paid?L("*PAGADO*","*PAID*"):L("*PENDIENTE DE PAGO*","*BALANCE DUE*")}\n`; }
+  if(cost){ m+=`💵 *${L("Total","Total")}:* $${cost} ${currency} — ${paid?L("*PAGADO*","*PAID*"):L("*PENDIENTE DE PAGO*","*BALANCE DUE*")}\n`; }
   else { m+=`💵 ${paid?L("*PAGADO*","*PAID*"):L("*PENDIENTE DE PAGO*","*BALANCE DUE*")}\n`; }
   if(notes) m+=`📝 ${notes}\n`;
 
