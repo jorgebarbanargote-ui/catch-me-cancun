@@ -1094,15 +1094,15 @@ document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',
   const grid=document.getElementById('ratesGrid'); if(!grid) return;
   /* [1-4 ida, 1-4 redondo], [5-7 ...], [8-10 ...] — precios en USD */
   const R=[
-    {n:'Cancún',            img:'destination-cancun.jpg',           p:[[51,102],[54,108],[57,114]]},
-    {n:'Puerto Juárez',     img:'destination-riviera-maya.jpg',     p:[[55,109],[57,114],[63,125]]},
-    {n:'Puerto Morelos',    img:'destination-puerto-morelos.jpg',   p:[[60,120],[66,131],[72,143]]},
-    {n:'Playa Mujeres',     img:'destination-playa-mujeres.jpg',    p:[[66,131],[72,143],[78,155]]},
-    {n:'Costa Mujeres',     img:'destination-costa-mujeres.jpg',    p:[[72,143],[78,155],[84,167]]},
-    {n:'Punta Maroma',      img:'destination-tulum.jpg',            p:[[72,143],[72,143],[78,155]]},
-    {n:'Playa del Carmen',  img:'destination-playa-del-carmen.jpg', p:[[87,173],[90,179],[96,191]]},
-    {n:'Puerto Aventuras',  img:'destination-puerto-aventuras.jpg', p:[[102,203],[108,215],[114,227]]},
-    {n:'Boca Paila',        img:'destination-tulum.jpg',            p:[[298,595],[310,620],[346,691]]}
+    {id:'cancun',          n:'Cancún',            img:'destination-cancun.jpg',           p:[[51,102],[54,108],[57,114]]},
+    {id:'puerto-juarez',   n:'Puerto Juárez',     img:'destination-riviera-maya.jpg',     p:[[55,109],[57,114],[63,125]]},
+    {id:'puerto-morelos',  n:'Puerto Morelos',    img:'destination-puerto-morelos.jpg',   p:[[60,120],[66,131],[72,143]]},
+    {id:'playa-mujeres',   n:'Playa Mujeres',     img:'destination-playa-mujeres.jpg',    p:[[66,131],[72,143],[78,155]]},
+    {id:'costa-mujeres',   n:'Costa Mujeres',     img:'destination-costa-mujeres.jpg',    p:[[72,143],[78,155],[84,167]]},
+    {id:'punta-maroma',    n:'Punta Maroma',      img:'destination-tulum.jpg',            p:[[72,143],[72,143],[78,155]]},
+    {id:'playa-del-carmen',n:'Playa del Carmen',  img:'destination-playa-del-carmen.jpg', p:[[87,173],[90,179],[96,191]]},
+    {id:'puerto-aventuras',n:'Puerto Aventuras',  img:'destination-puerto-aventuras.jpg', p:[[102,203],[108,215],[114,227]]},
+    {id:'boca-paila',      n:'Boca Paila',        img:'destination-tulum.jpg',            p:[[298,595],[310,620],[346,691]]}
   ];
   const PAX=['1–4','5–7','8–10'];
   const L={
@@ -1127,6 +1127,12 @@ document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',
     }).join('');
   }
   window.__renderRates=render;
+  /* aplica precios remotos (Firebase); si un destino no viene, conserva el de respaldo */
+  window.__applyRates=function(remote){
+    if(!remote||typeof remote!=='object') return;
+    R.forEach(d=>{ const r=remote[d.id]; if(Array.isArray(r)&&r.length===3) d.p=r; });
+    render(document.documentElement.lang==='es'?'es':'en');
+  };
   render(document.documentElement.lang==='es'?'es':'en');
 })();
 
@@ -1239,6 +1245,22 @@ document.getElementById('yr').textContent=new Date().getFullYear();
 try{const dEl=document.getElementById('w_date');dEl.min=new Date().toISOString().split('T')[0];}catch(e){}
 const saved=localStorage.getItem('cmc_lang');
 if(saved==='es')setLang('es');
+</script>
+
+<!-- ===== Precios en vivo desde Firebase (solo lectura) ===== -->
+<script src="firebase-config.js"></script>
+<script type="module">
+  const cfg = window.FIREBASE_CONFIG || {};
+  if (cfg.apiKey && cfg.apiKey.indexOf('PEGA') === -1) {
+    try {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js');
+      const { getFirestore, doc, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js');
+      const db = getFirestore(initializeApp(cfg));
+      onSnapshot(doc(db, 'config', 'prices'), s => {
+        if (s.exists() && s.data().rates && window.__applyRates) window.__applyRates(s.data().rates);
+      }, err => console.warn('Precios Firebase:', err.message));
+    } catch (e) { console.warn('Firebase no cargó, se usan precios de respaldo:', e.message); }
+  }
 </script>
 </body>
 </html>

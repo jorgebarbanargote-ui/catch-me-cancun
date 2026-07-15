@@ -87,6 +87,24 @@ a{color:var(--turq-deep)}
 .hint{font-size:.78rem;color:var(--muted2);margin-top:8px}
 .warn{background:#fff4e5;border:1px solid #ffd9a6;color:#8a5a00;padding:10px 12px;border-radius:11px;font-size:.82rem;margin-top:10px;display:none}
 @media(max-width:820px){ .grid{grid-template-columns:1fr} .preview{position:static} .fields{grid-template-columns:1fr} }
+
+/* ===== editor de precios ===== */
+.px-status{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:.86rem;color:var(--palm);font-weight:700;margin-bottom:16px}
+.px-status a{cursor:pointer;color:var(--muted);text-decoration:underline;font-weight:600}
+.px-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.px-dest{border:1px solid var(--line);border-radius:13px;padding:12px 14px 8px;background:#f7fdfe}
+.px-dest h4{font-size:.98rem;margin-bottom:10px;color:var(--turq-deep)}
+.px-row{display:grid;grid-template-columns:60px 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px}
+.px-row.head{font-size:.64rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted2);font-weight:700;margin-bottom:4px}
+.px-row.head span{text-align:center}
+.px-row .pax{background:linear-gradient(135deg,var(--gold),#ffe396);color:#4a2d00;font-weight:700;text-align:center;border-radius:8px;padding:7px 0;font-size:.8rem}
+.px-row input{padding:9px 8px;border:1px solid var(--line);border-radius:9px;background:#fff;width:100%;text-align:center;font-weight:700;color:var(--ink)}
+.px-row input:focus{outline:none;border-color:var(--turq);box-shadow:0 0 0 3px rgba(11,182,204,.18)}
+.px-save-bar{position:sticky;bottom:0;background:linear-gradient(180deg,transparent,#eafafd 40%);padding:16px 0 6px;margin-top:8px}
+.px-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:#0c2a3a;color:#fff;padding:13px 22px;border-radius:12px;font-weight:700;opacity:0;pointer-events:none;transition:.3s;z-index:200;box-shadow:0 22px 44px -18px #000}
+.px-toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.px-toast.err{background:#b3261e}
+@media(max-width:820px){ .px-grid{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -122,6 +140,7 @@ a{color:var(--turq-deep)}
     <button class="tab" data-s="oneway">Sencillo</button>
     <button class="tab" data-s="h2h">Hotel a Hotel</button>
     <button class="tab" data-s="open">Open / Airbnb</button>
+    <button class="tab" data-s="prices">💲 Precios de la web</button>
   </div>
 
   <div class="grid">
@@ -229,7 +248,41 @@ a{color:var(--turq-deep)}
       </div>
     </div>
   </div>
+
+  <!-- ===== EDITOR DE PRECIOS (WEB) ===== -->
+  <div id="pricesWrap" class="hide">
+    <div class="card">
+      <h3><span class="dot">💲</span> Editor de precios de la página web</h3>
+      <p style="color:var(--muted);font-size:.88rem;margin-bottom:16px">Cambia aquí los precios de cada destino. Al guardar, se actualizan al instante en la página pública para todos los clientes.</p>
+
+      <div id="pxNotice" class="warn" style="display:none"></div>
+
+      <!-- login de edición -->
+      <div id="pxLogin">
+        <div class="fields" style="max-width:520px">
+          <div class="f"><label>Correo de edición</label><input id="px_email" type="email" placeholder="jose@catchmecancun.mx" autocomplete="username" /></div>
+          <div class="f"><label>Contraseña de edición</label><input id="px_pass" type="password" placeholder="••••••••" autocomplete="current-password" /></div>
+        </div>
+        <div class="gate-err" id="pxErr" style="min-height:16px;margin:8px 0"></div>
+        <button class="btn btn-wa" id="px_login">Entrar a editar precios</button>
+      </div>
+
+      <!-- editor -->
+      <div id="pxEditor" class="hide">
+        <div class="px-status">
+          <span id="pxWho">✓ Conectado</span>
+          <a id="px_logout">Salir de edición</a>
+        </div>
+        <div class="px-grid" id="pxGrid"></div>
+        <div class="px-save-bar">
+          <button class="btn btn-wa" id="px_save" style="width:100%;font-size:1.02rem;padding:15px">💾 Guardar precios en la web</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<div class="px-toast" id="pxToast"></div>
 
 <script>
 /* ---------- password gate ---------- */
@@ -250,9 +303,15 @@ if(sessionStorage.getItem("cmc_ok")==="1")unlock();
 /* ---------- tabs ---------- */
 let service="round";
 const panels={round:"panel-round",oneway:"panel-oneway",h2h:"panel-h2h",open:"panel-open"};
+const bookingGrid=document.querySelector(".grid"), pricesWrap=document.getElementById("pricesWrap");
 document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
   document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
   t.classList.add("on"); service=t.dataset.s;
+  if(service==="prices"){
+    bookingGrid.style.display="none"; pricesWrap.classList.remove("hide");
+    return;
+  }
+  bookingGrid.style.display=""; pricesWrap.classList.add("hide");
   Object.values(panels).forEach(id=>document.getElementById(id).classList.add("hide"));
   document.getElementById(panels[service]).classList.remove("hide");
   build();
@@ -345,6 +404,102 @@ document.getElementById("reset").addEventListener("click",()=>{
   document.getElementById("r_afrom").value="Cancún Airport (CUN)";document.getElementById("r_dto").value="Cancún Airport (CUN)";
   build();
 });
+
+/* ---------- destinos por defecto (respaldo si Firebase está vacío) ---------- */
+const PX_DEST=[
+  {id:'cancun',n:'Cancún',p:[[51,102],[54,108],[57,114]]},
+  {id:'puerto-juarez',n:'Puerto Juárez',p:[[55,109],[57,114],[63,125]]},
+  {id:'puerto-morelos',n:'Puerto Morelos',p:[[60,120],[66,131],[72,143]]},
+  {id:'playa-mujeres',n:'Playa Mujeres',p:[[66,131],[72,143],[78,155]]},
+  {id:'costa-mujeres',n:'Costa Mujeres',p:[[72,143],[78,155],[84,167]]},
+  {id:'punta-maroma',n:'Punta Maroma',p:[[72,143],[72,143],[78,155]]},
+  {id:'playa-del-carmen',n:'Playa del Carmen',p:[[87,173],[90,179],[96,191]]},
+  {id:'puerto-aventuras',n:'Puerto Aventuras',p:[[102,203],[108,215],[114,227]]},
+  {id:'boca-paila',n:'Boca Paila',p:[[298,595],[310,620],[346,691]]}
+];
+const PX_PAX=['1–4','5–7','8–10'];
+function pxToast(msg,isErr){const t=document.getElementById('pxToast');t.textContent=msg;t.classList.toggle('err',!!isErr);t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2800);}
+function pxBuildGrid(data){
+  const grid=document.getElementById('pxGrid');
+  grid.innerHTML=PX_DEST.map(d=>{
+    const p=(data&&Array.isArray(data[d.id])&&data[d.id].length===3)?data[d.id]:d.p;
+    const rows=PX_PAX.map((lbl,i)=>`<div class="px-row"><span class="pax">${lbl}</span>`+
+      `<input type="number" inputmode="numeric" min="0" data-id="${d.id}" data-row="${i}" data-col="0" value="${p[i][0]}">`+
+      `<input type="number" inputmode="numeric" min="0" data-id="${d.id}" data-row="${i}" data-col="1" value="${p[i][1]}"></div>`).join('');
+    return `<div class="px-dest"><h4>${d.n}</h4><div class="px-row head"><span></span><span>Solo ida</span><span>Redondo</span></div>${rows}</div>`;
+  }).join('');
+}
+function pxCollect(){
+  const rates={}; PX_DEST.forEach(d=>rates[d.id]=[[0,0],[0,0],[0,0]]);
+  document.querySelectorAll('#pxGrid input').forEach(inp=>{
+    const v=parseInt(inp.value,10);
+    rates[inp.dataset.id][+inp.dataset.row][+inp.dataset.col]=isNaN(v)?0:v;
+  });
+  return rates;
+}
+</script>
+
+<!-- ===== Editor de precios: Firebase (auth + guardar) ===== -->
+<script src="firebase-config.js"></script>
+<script type="module">
+  const cfg=window.FIREBASE_CONFIG||{};
+  const notice=document.getElementById('pxNotice');
+  const loginBox=document.getElementById('pxLogin');
+  const editorBox=document.getElementById('pxEditor');
+  const errEl=document.getElementById('pxErr');
+
+  if(!cfg.apiKey || cfg.apiKey.indexOf('PEGA')!==-1){
+    notice.style.display='block';
+    notice.textContent='⚙️ Falta conectar Firebase. Pega tu configuración en el archivo firebase-config.js siguiendo las instrucciones. Mientras tanto, la web muestra los precios de respaldo.';
+    loginBox.style.display='none';
+  } else {
+    try{
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js');
+      const { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js');
+      const { getFirestore, doc, getDoc, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js');
+      const app=initializeApp(cfg), auth=getAuth(app), db=getFirestore(app);
+      const ref=doc(db,'config','prices');
+
+      async function loadInto(){
+        try{ const s=await getDoc(ref); pxBuildGrid(s.exists()?s.data().rates:null); }
+        catch(e){ pxBuildGrid(null); pxToast('No se pudieron cargar los precios: '+e.message,true); }
+      }
+
+      onAuthStateChanged(auth, async user=>{
+        if(user){
+          loginBox.style.display='none'; editorBox.classList.remove('hide');
+          document.getElementById('pxWho').textContent='✓ Conectado como '+user.email;
+          await loadInto();
+        } else {
+          loginBox.style.display=''; editorBox.classList.add('hide');
+        }
+      });
+
+      document.getElementById('px_login').addEventListener('click', async ()=>{
+        errEl.textContent='';
+        const email=document.getElementById('px_email').value.trim();
+        const pass=document.getElementById('px_pass').value;
+        try{ await signInWithEmailAndPassword(auth,email,pass); }
+        catch(e){ errEl.textContent='No se pudo entrar: '+(e.code||e.message); }
+      });
+      document.getElementById('px_pass').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('px_login').click();});
+      document.getElementById('px_logout').addEventListener('click',()=>signOut(auth));
+
+      document.getElementById('px_save').addEventListener('click', async ()=>{
+        const btn=document.getElementById('px_save'); const orig=btn.textContent;
+        btn.disabled=true; btn.textContent='Guardando…';
+        try{
+          await setDoc(ref,{rates:pxCollect(),updatedAt:serverTimestamp()},{merge:true});
+          pxToast('✅ Precios guardados. Ya están en vivo en la web.');
+        }catch(e){ pxToast('Error al guardar: '+(e.code||e.message),true); }
+        finally{ btn.disabled=false; btn.textContent=orig; }
+      });
+    }catch(e){
+      notice.style.display='block';
+      notice.textContent='No se pudo cargar Firebase: '+e.message;
+      loginBox.style.display='none';
+    }
+  }
 </script>
 </body>
 </html>
