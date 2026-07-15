@@ -316,11 +316,7 @@ async function tryPw(){
   const v=document.getElementById("pw").value;
   if(await sha256(v)===PWHASH){
     sessionStorage.setItem("cmc_ok","1");
-    if(bioAvail && !localStorage.getItem(BIO_KEY)){ /* ofrecer activar Face ID */
-      document.getElementById("pwArea").style.display="none";
-      document.getElementById("bioBtn").style.display="none";
-      document.getElementById("enroll").style.display="";
-    } else { unlock(); }
+    unlock(); /* entra directo; Face ID se activa con el botón "Face ID" dentro del panel */
   }
   else{document.getElementById("gerr").textContent="Contraseña incorrecta.";}
 }
@@ -591,10 +587,13 @@ function pxCollect(){
       document.getElementById('px_save').addEventListener('click', async ()=>{
         const btn=document.getElementById('px_save'); const orig=btn.textContent;
         btn.disabled=true; btn.textContent='Guardando…';
+        const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),12000));
         try{
-          await setDoc(ref,{rates:pxCollect(),updatedAt:serverTimestamp()},{merge:true});
+          await Promise.race([setDoc(ref,{rates:pxCollect(),updatedAt:serverTimestamp()},{merge:true}), timeout]);
           pxToast('✅ Precios guardados. Ya están en vivo en la web.');
-        }catch(e){ pxToast('Error al guardar: '+(e.code||e.message),true); }
+        }catch(e){
+          pxToast(e.message==='timeout' ? 'Conexión lenta: revisa tu internet e intenta otra vez.' : 'Error al guardar: '+(e.code||e.message), true);
+        }
         finally{ btn.disabled=false; btn.textContent=orig; }
       });
     }catch(e){
